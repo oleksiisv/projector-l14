@@ -1,0 +1,39 @@
+services:
+  ### mysql ################################################
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: 'projector_l14'
+      MYSQL_USER: 'admin'
+      MYSQL_PASSWORD: 'admin123'
+      MYSQL_ROOT_PASSWORD: 'root123'
+    ports:
+      - '3308:3308'
+    expose:
+      - '3308'
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./setup/mysql:/docker-entrypoint-initdb.d
+      - ./data/logs:/var/log/mysql/
+
+  ### nginx ################################################
+  nginx:
+    build:
+      context: ./context/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+    volumes:
+      - ./config/nginx/:/etc/nginx/conf.d/
+    depends_on:
+      - php-fpm
+
+  ### php-fpm ################################################
+  php-fpm:
+    build:
+      context: ./context/php-fpm
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src:/var/www/html
